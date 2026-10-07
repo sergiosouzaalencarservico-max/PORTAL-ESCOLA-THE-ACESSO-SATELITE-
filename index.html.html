@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Integrado & Sistema Satelital - Protocolo Y</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Fonte e Ícones -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+
+  <!-- Header & Telemetria Orbital -->
+  <header class="top-bar">
+    <div class="logo">
+      <i class="fa-solid fa-satellite-dish pulse-icon"></i>
+      <span>SATELLITE <strong>Y-NET</strong></span>
+    </div>
+
+    <!-- Status de Alerta do Satélite -->
+    <div class="satellite-status" id="satelliteBanner">
+      <span class="status-dot green"></span>
+      <span id="satStatusText">SAT-Y10: SINAL ESTÁVEL (ORBITA LEO)</span>
+    </div>
+
+    <div class="header-actions">
+      <span id="telemetryTime" class="telemetry-time">00:00:00 UTC</span>
+      <button id="themeToggle" class="btn-icon"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <!-- Painel do Radar e Protocolo Y -->
+  <section class="satellite-radar-section">
+    <div class="radar-card">
+      <h3><i class="fa-solid fa-radar"></i> Radar de Varredura Orbital</h3>
+      <div class="radar-display">
+        <div class="radar-sweep"></div>
+        <div class="radar-target target-1"></div>
+        <div class="radar-target target-2"></div>
+        <div class="radar-center"></div>
+      </div>
+    </div>
+
+    <div class="protocol-y-card">
+      <h3><i class="fa-solid fa-key"></i> Decodificador Protocolo Y</h3>
+      <p>Insira dados para codificação e envio telemétrico via satélite:</p>
+      <div class="y-input-group">
+        <input type="text" id="yInput" placeholder="Digite o texto ou código...">
+        <button onclick="processProtocolY()"><i class="fa-solid fa-shield-halved"></i> Codificar (Y)</button>
+      </div>
+      <div class="y-result" id="yResult">
+        <code>Aguardando entrada de dados...</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navegação dos Sistemas -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('achados')"><i class="fa-solid fa-box-open"></i> Achados e Perdidos</button>
+    <button class="tab-btn" onclick="switchTab('ocorrencias')"><i class="fa-solid fa-clipboard-user"></i> Ocorrências (Vitória)</button>
+    <button class="tab-btn" onclick="switchTab('ciencia')"><i class="fa-solid fa-flask"></i> Feira de Ciências</button>
+    <button class="tab-btn" onclick="switchTab('reserva')"><i class="fa-solid fa-desktop"></i> Reservas (Davi)</button>
+    <button class="tab-btn" onclick="switchTab('frota')"><i class="fa-solid fa-truck"></i> Frota (Brenda/Antônio)</button>
+    <button class="tab-btn" onclick="switchTab('reciclagem')"><i class="fa-solid fa-recycle"></i> Coleta Seletiva (Vitor)</button>
+    <button class="tab-btn" onclick="switchTab('doacoes')"><i class="fa-solid fa-hand-holding-heart"></i> Doações (Beatriz)</button>
+    <button class="tab-btn" onclick="switchTab('ia')"><i class="fa-solid fa-robot"></i> Prompts IA</button>
+    <button class="tab-btn" onclick="switchTab('comentarios')"><i class="fa-solid fa-comments"></i> Comentários</button>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-container">
+
+    <!-- 1. ACHADOS E PERDIDOS -->
+    <section id="achados" class="tab-content active">
+      <h2>🎒 Achados e Perdidos Escolares</h2>
+      <form id="formAchados" onsubmit="saveRecord(event, 'achados')">
+        <div class="form-grid">
+          <input type="text" id="achadosNome" placeholder="Nome do Objeto" required>
+          <input type="text" id="achadosLocal" placeholder="Local Onde Foi Encontrado" required>
+          <input type="date" id="achadosData" required>
+          <select id="achadosStatus">
+            <option value="Aguardando Retirada">Aguardando Retirada</option>
+            <option value="Devolvido">Devolvido</option>
+          </select>
+          <input type="text" id="achadosRetirou" placeholder="Nome de Quem Retirou (Se devolvido)">
+          <input type="file" id="achadosFoto" accept="image/*">
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Cadastrar Registro</button>
+      </form>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Foto</th>
+              <th>Objeto</th>
+              <th>Local</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th>Retirado Por</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="listAchados"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. OCORRÊNCIAS (VITÓRIA) -->
+    <section id="ocorrencias" class="tab-content">
+      <h2>📋 Registro de Ocorrências e Atendimentos (Vitória)</h2>
+      <form id="formOcorrencias" onsubmit="saveRecord(event, 'ocorrencias')">
+        <div class="form-grid">
+          <input type="text" id="ocorrenciaAluno" placeholder="Nome do Aluno" required>
+          <input type="text" id="ocorrenciaTurma" placeholder="Turma/Série" required>
+          <input type="text" id="ocorrenciaTipo" placeholder="Tipo de Ocorrência" required>
+          <input type="date" id="ocorrenciaData" required>
+          <textarea id="ocorrenciaDesc" placeholder="Descrição dos Fatos" required></textarea>
+          <textarea id="ocorrenciaAcao" placeholder="Ação Tomada" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Registrar Atendimento</button>
+      </form>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Turma</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Ação</th>
+              <th>Data</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="listOcorrencias"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. FEIRA DE CIÊNCIAS -->
+    <section id="ciencia" class="tab-content">
+      <h2>🔬 Mural Digital de Projetos e Feira de Ciências</h2>
+      <form id="formCiencia" onsubmit="saveRecord(event, 'ciencia')">
+        <div class="form-grid">
+          <input type="text" id="cienciaTitulo" placeholder="Título do Projeto" required>
+          <input type="text" id="cienciaGrupo" placeholder="Turma/Grupo Responsável" required>
+          <input type="text" id="cienciaOrientador" placeholder="Orientador" required>
+          <input type="url" id="cienciaLink" placeholder="Link para Vídeo/Apresentação">
+          <input type="file" id="cienciaFoto" accept="image/*">
+          <textarea id="cienciaResumo" placeholder="Resumo do Trabalho" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Publicar Projeto</button>
+      </form>
+      <div class="cards-grid" id="listCiencia"></div>
+    </section>
+
+    <!-- 4. RESERVA DE AMBIENTES (DAVI) -->
+    <section id="reserva" class="tab-content">
+      <h2>💻 Sistema de Reserva de Ambientes e Equipamentos (Davi)</h2>
+      <form id="formReserva" onsubmit="saveRecord(event, 'reserva')">
+        <div class="form-grid">
+          <input type="text" id="reservaProf" placeholder="Nome do Professor" required>
+          <input type="text" id="reservaRecurso" placeholder="Recurso/Sala Solicitada" required>
+          <input type="date" id="reservaData" required>
+          <input type="text" id="reservaHorario" placeholder="Horário/Aula (ex: 2ª Aula - M1)" required>
+          <textarea id="reservaFinalidade" placeholder="Finalidade da Atividade" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-calendar-check"></i> Confirmar Reserva</button>
+      </form>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Professor</th>
+              <th>Recurso/Sala</th>
+              <th>Data</th>
+              <th>Horário</th>
+              <th>Finalidade</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="listReserva"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. CONTROLE DE FROTA (BRENDA E ANTÔNIO) -->
+    <section id="frota" class="tab-content">
+      <h2>🚚 Controle de Frota e Abastecimento (Brenda & Antônio)</h2>
+      <form id="formFrota" onsubmit="saveRecord(event, 'frota')">
+        <div class="form-grid">
+          <input type="text" id="frotaPlaca" placeholder="Placa do Veículo" required>
+          <input type="text" id="frotaMotorista" placeholder="Nome do Motorista" required>
+          <input type="number" id="frotaKm" placeholder="Quilometragem Atual" required>
+          <input type="number" step="0.01" id="frotaValor" placeholder="Valor do Abastecimento (R$)" required>
+          <input type="number" step="0.01" id="frotaLitros" placeholder="Litros Abastecidos" required>
+          <input type="file" id="frotaComprovante" accept="image/*">
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-gas-pump"></i> Registrar Abastecimento</button>
+      </form>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Comprovante</th>
+              <th>Placa</th>
+              <th>Motorista</th>
+              <th>Km Atual</th>
+              <th>Valor (R$)</th>
+              <th>Litros</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="listFrota"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. COLETA SELETIVA (VITOR EMANUEL) -->
+    <section id="reciclagem" class="tab-content">
+      <h2>♻️ Ponto de Coleta Seletiva / Reciclagem (Vitor Emanuel)</h2>
+      <form id="formReciclagem" onsubmit="saveRecord(event, 'reciclagem')">
+        <div class="form-grid">
+          <input type="text" id="reciclagemNome" placeholder="Nome do Ponto de Coleta" required>
+          <input type="text" id="reciclagemEnd" placeholder="Endereço/Bairro" required>
+          <input type="text" id="reciclagemMateriais" placeholder="Materiais Aceitos (ex: Papel, Plástico, Óleo)" required>
+          <input type="text" id="reciclagemHorario" placeholder="Horário de Funcionamento" required>
+          <input type="file" id="reciclagemFoto" accept="image/*">
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-map-location-dot"></i> Cadastrar Ponto</button>
+      </form>
+      <div class="cards-grid" id="listReciclagem"></div>
+    </section>
+
+    <!-- 7. GERENCIADOR DE DOAÇÕES (BEATRIZ) -->
+    <section id="doacoes" class="tab-content">
+      <h2>🤝 Gerenciador de Doações e Ações Sociais (Beatriz)</h2>
+      <form id="formDoacoes" onsubmit="saveRecord(event, 'doacoes')">
+        <div class="form-grid">
+          <input type="text" id="doacaoDoador" placeholder="Nome do Doador/Campanha" required>
+          <input type="text" id="doacaoTipo" placeholder="Tipo de Item Doado" required>
+          <input type="number" id="doacaoQtd" placeholder="Quantidade" required>
+          <input type="text" id="doacaoPonto" placeholder="Ponto de Arrecadação" required>
+          <input type="date" id="doacaoData" required>
+          <input type="file" id="doacaoFoto" accept="image/*">
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-heart"></i> Registrar Doação</button>
+      </form>
+      <div class="cards-grid" id="listDoacoes"></div>
+    </section>
+
+    <!-- MURAL DE PROMPTS DA IA -->
+    <section id="ia" class="tab-content">
+      <h2>🤖 Documentação de Prompts de IA (OpenCode / Gemini CLI)</h2>
+      <p class="section-desc">Prompts utilizados pela turma para solucionar os desafios de desenvolvimento:</p>
+      
+      <div class="cards-grid">
+        <div class="card">
+          <h3>Vitória</h3>
+          <p class="tag">OpenCode / Gemini</p>
+          <div class="code-box">
+            "Como criar uma validação flexível de datas passadas e organizar o layout de formulários em grid para atendimento pedagógico?"
+          </div>
+        </div>
+        <div class="card">
+          <h3>Davi</h3>
+          <p class="tag">Gemini CLI</p>
+          <div class="code-box">
+            "Crie uma função JS que verifique conflitos de horários em reservas de laboratório e exiba um alerta visual no formulário."
+          </div>
+        </div>
+        <div class="card">
+          <h3>Brenda & Antônio</h3>
+          <p class="tag">OpenCode</p>
+          <div class="code-box">
+            "Gerar código para converter imagens de comprovantes em Base64 no navegador e salvar no LocalStorage."
+          </div>
+        </div>
+        <div class="card">
+          <h3>Vitor Emanuel & Beatriz</h3>
+          <p class="tag">Gemini CLI</p>
+          <div class="code-box">
+            "Escreva a estrutura CSS Flexbox/Grid responsiva em modo dark futurista para exibição em formato de cards de serviços."
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMENTÁRIOS DA TURMA -->
+    <section id="comentarios" class="tab-content">
+      <h2>💬 Comentários da Turma</h2>
+      <form id="formComentario" onsubmit="saveComentario(event)">
+        <div class="form-grid">
+          <input type="text" id="comentarioAutor" placeholder="Seu Nome" required>
+          <select id="comentarioNota">
+            <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+            <option value="4">⭐⭐⭐⭐ (4/5)</option>
+            <option value="3">⭐⭐⭐ (3/5)</option>
+          </select>
+          <textarea id="comentarioTexto" placeholder="Escreva seu comentário sobre o sistema..." required></textarea>
+        </div>
+        <button type="submit" class="btn-primary"><i class="fa-solid fa-comment-dots"></i> Enviar Comentário</button>
+      </form>
+
+      <div class="comments-list" id="listComentarios"></div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
